@@ -8,46 +8,32 @@ import javax.swing.JTextField;
 import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.SwingConstants;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import javax.swing.JTextArea;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.awt.Window.Type;
-import java.awt.FlowLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.SystemColor;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JTextPane;
 import java.awt.Cursor;
-import java.awt.ComponentOrientation;
+
 
 public class MainQuote {
 
-	private static final String FileURL = "https://cs.gmu.edu/~offutt/classes/642/examples/servlets/quotes";
-	private static final String FileJavascript = FileURL + "/quotes.js";
-
-	// Data file
-	// This shows up in /home/offutt/CS/webapps/WEB-INF/data/ from a terminal
-	// window.
+	// the URL to the quotes.xml file
 	private static final String quoteFileName = "src/quotes/quotes.xml";
-
-	private static final String thisServlet = "https://cs.gmu.edu:8443/offutt/servlet/quotes.quoteserve";
-
+	
+	// the main frame
 	private static JFrame frmQuoteApplication;
 	private static JTextField txtSearch;
 	private static JTextArea txtQuoteDescription;
@@ -63,7 +49,7 @@ public class MainQuote {
 	static ArrayList<String> searchList;
 	static ArrayList<String> searchContextList;
 	
-	// add new
+	// the searchListScope will store search scope at each submission 
 	static ArrayList<String> searchListScope;
 	
 	DefaultTableModel tableModelSearchHistory;
@@ -100,7 +86,9 @@ public class MainQuote {
 		});
 	}
 
-	/* method to */
+	/* method to update the tableModelSearchHistory; the datasource is the searchList and searchContextList
+	 * 
+	 * */
 	public void updateSearchHistory() {
 		int index = 0;
 
@@ -121,6 +109,13 @@ public class MainQuote {
 		}
 	}
 
+	
+	/**
+	 * Print the search result
+	 * @param out display the result in the searchResult
+	 * @param searchText search String input from user
+	 * @param searchScope scope for this search
+	*/
 	public void printSearch(String searchText, String searchScope) {
 		// add a string builder
 		StringBuilder searchResult = new StringBuilder();
@@ -158,7 +153,11 @@ public class MainQuote {
 		txtSearchResult.setText(searchResult.toString());
 	}
 
-	/* the method execute the search */
+	/**
+	 * Execute the search and then call printSearch to display result
+	 * @param out update the search history list and the result in the searchResult
+	 * @param searchText search String input from user
+	*/
 	public void doSearch(String searchText) {
 
 		if (!searchText.equals("") && searchText.length() > 0) {
@@ -376,8 +375,7 @@ public class MainQuote {
 						radAuthor.setSelected(true);
 					} 
 					
-					System.out.println("Row: " + row + ", Column: " + column + ", value = " + textFromCell + ", searchScope = " + searchScope);
-					
+					// execute the doSearch method
 					String searchText = txtSearch.getText();
 					doSearch(searchText);
 				}
