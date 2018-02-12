@@ -36,7 +36,7 @@ public class MainQuote {
 	// the main frame
 	private static JFrame frmQuoteApplication;
 	private static JTextField txtSearch;
-	private static JTextArea txtQuoteDescription;
+	private static JTextArea txtQuoteText;
 	private static JTextArea txtAuthor;
 	private static QuoteList quoteList;
 	private static JRadioButton radAuthor;
@@ -71,7 +71,7 @@ public class MainQuote {
 					quoteList = qParser.getQuoteList();
 
 					Quote quoteTmp = quoteList.getRandomQuote();
-					txtQuoteDescription.setText(" " + quoteTmp.getQuoteText());
+					txtQuoteText.setText(" " + quoteTmp.getQuoteText());
 					txtAuthor.setText(quoteTmp.getAuthor());
 
 					/* Initialize searchList and searchContextList */
@@ -85,7 +85,7 @@ public class MainQuote {
 			}
 		});
 	}
-
+	
 	/* method to update the tableModelSearchHistory; the datasource is the searchList and searchContextList
 	 * 
 	 * */
@@ -241,18 +241,18 @@ public class MainQuote {
 		panelQuote.setLayout(new BoxLayout(panelQuote, BoxLayout.Y_AXIS));
 
 		/* the quote */
-		txtQuoteDescription = new JTextArea();
-		txtQuoteDescription.setRequestFocusEnabled(false);
-		txtQuoteDescription.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-		txtQuoteDescription.setLineWrap(true);
-		txtQuoteDescription.setForeground(new Color(0, 204, 102));
-		txtQuoteDescription.setBackground(SystemColor.control);
-		txtQuoteDescription.setWrapStyleWord(true);
-		txtQuoteDescription.setFont(new Font("Papyrus", Font.BOLD, 20));
-		panelQuote.add(txtQuoteDescription);
-		txtQuoteDescription.setColumns(28);
-		txtQuoteDescription.setRows(3);
-		txtQuoteDescription.setText("QuoteDescription");
+		txtQuoteText = new JTextArea();
+		txtQuoteText.setRequestFocusEnabled(false);
+		txtQuoteText.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		txtQuoteText.setLineWrap(true);
+		txtQuoteText.setForeground(new Color(0, 204, 102));
+		txtQuoteText.setBackground(SystemColor.control);
+		txtQuoteText.setWrapStyleWord(true);
+		txtQuoteText.setFont(new Font("Papyrus", Font.BOLD, 20));
+		panelQuote.add(txtQuoteText);
+		txtQuoteText.setColumns(28);
+		txtQuoteText.setRows(3);
+		txtQuoteText.setText("QuoteDescription");
 
 		/* the author of that quote */
 		txtAuthor = new JTextArea();
@@ -265,16 +265,29 @@ public class MainQuote {
 		panelQuote.add(txtAuthor);
 
 		/* the button to generate next quote */
+		
+		JPanel panelQuoteControl = new JPanel();
+		panelQuote.add(panelQuoteControl);
 		JButton btnNextQuote = new JButton("Get Next Random Quote");
-		panelQuote.add(btnNextQuote);
+		panelQuoteControl.add(btnNextQuote);
 		btnNextQuote.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				Quote quoteTmp = quoteList.getRandomQuote();
-				txtQuoteDescription.setText(" " + quoteTmp.getQuoteText());
+				txtQuoteText.setText(" " + quoteTmp.getQuoteText());
 				txtAuthor.setText(quoteTmp.getAuthor());
 			}
 		});
+		
+		JButton btnAddNewQuote = new JButton("Add New Quote");
+		btnAddNewQuote.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				AddNewQuote frame = new AddNewQuote();
+				frame.setVisible(true);				
+			}
+		});
+		panelQuoteControl.add(btnAddNewQuote);
 
 		/* the panel search */
 		JPanel panelSearch = new JPanel();
