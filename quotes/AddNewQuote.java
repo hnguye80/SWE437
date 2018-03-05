@@ -8,16 +8,6 @@ import java.awt.Font;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.w3c.dom.*;
-import javax.xml.transform.*;
-import javax.xml.transform.stream.*;
-import javax.xml.transform.dom.*;
 
 import javax.swing.JLabel;
 import javax.swing.BoxLayout;
@@ -32,19 +22,21 @@ import java.awt.SystemColor;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 
+
 public class AddNewQuote extends JFrame {
 	// the URL to the quotes.xml file
 	private static final String quoteFileName = "src/quotes/quotes.xml";
-
+	
 	private JLabel lblAddNewQuote;
 	private JPanel contentPane;
 	private JTextArea txtQuoteText;
 	private JTextField txtAuthor;
+	private JTextField txtKeyword;
 	private JButton btnAddNewQuote;
 	private JTextPane lblMessage;
-
-	private static final String SPECIAL_CHARECTORS = "[@#$%&*()_+=|<>?{}\\\\[\\\\]~-]";
-
+	
+	QuoteAdder quoteAdder = new QuoteAdder(quoteFileName);
+	
 	/**
 	 * Launch the application.
 	 */
@@ -60,119 +52,46 @@ public class AddNewQuote extends JFrame {
 			}
 		});
 	}
-
-	public boolean isQuoteValid(String quoteText, String author) {
-		Pattern patternSpecialCharactors = Pattern.compile(SPECIAL_CHARECTORS);
-
-		boolean isQuoteValid = true;
-		String message = "";
-
-		Matcher hasSpecialCharactors = patternSpecialCharactors.matcher(quoteText);
-		// check no special character
-		if (hasSpecialCharactors.find() == true) {
-			isQuoteValid = false;
-			message = "Your quote contains special character(s)!";
-		}
-		// check no numbers
-		if (quoteText.matches("[0-9]+")) {
-			isQuoteValid = false;
-			message = "Your quote contains number(s)!";
-		}
-
-		/*
-		 * check duplicate for the quote NOTE: I will go with the assumption that a
-		 * specific quote will go with certain author(s) For example: the quote
-		 * "I know that you believe you understand what you think I said, but I am not sure you realize that what you heard is not what I meant."
-		 * belong to Richard Nixon So, this quote will not be claimed for somebody else.
-		 */
-		// get the quote list
-		QuoteSaxParser qParser = new QuoteSaxParser(quoteFileName);
-		// Stores all the quotes from the XML file
-		QuoteList quoteList;
-		quoteList = qParser.getQuoteList();
-		QuoteList searchRes = quoteList.search(quoteText, QuoteList.SearchTextVal);
-		Quote quoteTmp;
-
-		// if the list of quote is > 0 meaning that the author already has some quotes
-		// in the file
-		if (searchRes.getSize() > 0) {
-			isQuoteValid = false;
-			// check how similar the existing quote vs the new quote
-			for (int i = 0; i < searchRes.getSize(); i++) {
-				quoteTmp = searchRes.getQuote(i);
-				message = "[Duplicate Quotes] \n " + quoteTmp.getQuoteText() + "(" + quoteTmp.getAuthor() + ")";
-
-				System.out.println(message);
-
-			}
-		}
-
-		lblMessage.setText(message);
-		return isQuoteValid;
+	
+	public boolean isQuoteValid(String quoteText, String author) {	
+		quoteAdder.validQuote(quoteText, author);
+		lblMessage.setText(quoteAdder.getMessage());
+		return quoteAdder.isQuoteValid();
 	}
-
-	public void doValidation(String quoteText, String author) {
-		if (!quoteText.equals("") && !author.equals("")) {
-			boolean quoteValidation = isQuoteValid(quoteText, author);
-			// disable the button if the quote is not valid
-			if (quoteValidation) {
-				btnAddNewQuote.setEnabled(true);
-			} else {
-				btnAddNewQuote.setEnabled(false);
-			}
+	
+	public void doValidation (String quoteText, String author) {
+		boolean quoteValidation = isQuoteValid(quoteText, author);
+		// disable the button if the quote is not valid
+		if (quoteValidation) {
+			btnAddNewQuote.setEnabled(true);
+		} else {
+			btnAddNewQuote.setEnabled(false);
 		}
 	}
-
-	public void appendNewQuote(String quoteText, String author) throws Exception {
-		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-		Document document = documentBuilder.parse(quoteFileName);
-		Element root = document.getDocumentElement();
-
-		Element newQuoteNode = document.createElement("quote");
-		Element quoteTextNode = document.createElement("quote-text");
-		Element authorNode = document.createElement("author");
-
-		newQuoteNode.appendChild(quoteTextNode);
-		newQuoteNode.appendChild(authorNode);
-
-		quoteTextNode.appendChild(document.createTextNode(quoteText));
-		authorNode.appendChild(document.createTextNode(author));
-
-		root.appendChild(newQuoteNode);
-
-		DOMSource source = new DOMSource(document);
-		TransformerFactory transformerFactory = TransformerFactory.newInstance();
-		Transformer transformer = transformerFactory.newTransformer();
-		StreamResult result = new StreamResult(quoteFileName);
-		transformer.transform(source, result);
-
-	}
-
+	
 	public void doAddNewQuote() {
 		String quoteText = txtQuoteText.getText();
 		String author = txtAuthor.getText();
-
+		String keyword = txtKeyword.getText();
+		
 		if (!quoteText.equals("") && !author.equals("")) {
 			try {
 				// we need to validate the quote before save it in XML file
 				if (isQuoteValid(quoteText, author)) {
 					// when the validation check passes, we will save new quote to the XML file
-					appendNewQuote(quoteText, author);
+					quoteAdder.appendNewQuote(quoteText, author, keyword);
 
 					// empty both text
 					txtQuoteText.setText("");
 					txtAuthor.setText("");
-
-					quoteText = "";
-					author = "";
-
+					txtKeyword.setText("");
+					
 					lblMessage.setText("Successfully add new quote to the file!");
 				}
 			} catch (Exception ex) {
-
+				
 			}
-
+			
 		}
 	}
 
@@ -215,8 +134,6 @@ public class AddNewQuote extends JFrame {
 				String quoteText = txtQuoteText.getText();
 				String author = "";
 				doValidation(quoteText, author);
-				quoteText = "";
-				author = "";
 			}
 		});
 		txtQuoteText.setAutoscrolls(false);
@@ -242,8 +159,6 @@ public class AddNewQuote extends JFrame {
 				String quoteText = txtQuoteText.getText();
 				String author = txtAuthor.getText();
 				doValidation(quoteText, author);
-				quoteText = "";
-				author = "";
 			}
 		});
 		txtAuthor.setAutoscrolls(false);
@@ -251,11 +166,36 @@ public class AddNewQuote extends JFrame {
 		txtAuthor.setPreferredSize(new Dimension(7, 10));
 		panelAuthor.add(txtAuthor);
 		txtAuthor.setColumns(5);
+		
+		JPanel panelKeyword = new JPanel();
+		panelKeyword.setPreferredSize(new Dimension(10, 5));
+		panelMain.add(panelKeyword);
+		panelKeyword.setLayout(new BoxLayout(panelKeyword, BoxLayout.X_AXIS));
 
+		JLabel lblKeyword = new JLabel("Keywords   ");
+		lblKeyword.setFont(new Font("Tahoma", Font.BOLD, 12));
+		panelKeyword.add(lblKeyword);
+
+		txtKeyword = new JTextField();
+		txtKeyword.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				String quoteText = txtQuoteText.getText();
+				String author = txtAuthor.getText();
+				doValidation(quoteText, author);
+			}
+		});
+		txtKeyword.setAutoscrolls(false);
+		txtKeyword.setFont(new Font("MS Mincho", Font.ITALIC, 16));
+		txtKeyword.setPreferredSize(new Dimension(7, 10));
+		panelKeyword.add(txtKeyword);
+		txtKeyword.setColumns(5);
+		// end here
+		
 		JPanel panelMessage = new JPanel();
 		panelMain.add(panelMessage);
 		panelMessage.setLayout(new BorderLayout(0, 0));
-
+		
 		lblMessage = new JTextPane();
 		lblMessage.setForeground(new Color(255, 0, 0));
 		lblMessage.setBackground(SystemColor.control);

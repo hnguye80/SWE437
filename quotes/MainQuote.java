@@ -14,7 +14,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.JTextArea;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.awt.Window.Type;
 import java.awt.Color;
@@ -42,6 +41,7 @@ public class MainQuote {
 	private static JRadioButton radAuthor;
 	private static JRadioButton radQuote;
 	private static JRadioButton radBoth;
+	private static JRadioButton radKeyword;
 	private JTable tblSearchHistory;
 
 	private static JTextPane txtSearchResult;
@@ -129,6 +129,8 @@ public class MainQuote {
 					searchScopeInt = QuoteList.SearchAuthorVal;
 				} else if (searchScope.equals("both")) {
 					searchScopeInt = QuoteList.SearchBothVal;
+				} else if (searchScope.equals("keyword")) {
+					searchScopeInt = QuoteList.SearchKeywordVal;
 				}
 			}
 
@@ -143,8 +145,10 @@ public class MainQuote {
 				searchResult.append("<dl>");
 				for (int i = 0; i < searchRes.getSize(); i++) {
 					quoteTmp = searchRes.getQuote(i);
-					searchResult.append("<dt>" + quoteTmp.getQuoteText() + "</dt>");
-					searchResult.append("<dd>&mdash;" + quoteTmp.getAuthor() + "</dd>");
+					searchResult.append("<dt>" + quoteTmp.getQuoteText() + "</dt>");	
+					searchResult.append("<dt>&mdash;" + quoteTmp.getAuthor() + "</dt>");
+					searchResult.append("<dt> [keywords: " + quoteTmp.getKeyword() + "]" + "</dt>");
+					searchResult.append("<dt>-----------------------------------------------</dt>");
 				}
 				searchResult.append("</dl>");
 			}
@@ -169,6 +173,8 @@ public class MainQuote {
 				searchScope = "quote";
 			} else if (radBoth.isSelected() == true) {
 				searchScope = "both";
+			} else if (radKeyword.isSelected() == true) {
+				searchScope = "keyword";
 			}
 
 			System.out.println("searchText = " + searchText + ", scope = " + searchScope);
@@ -294,34 +300,47 @@ public class MainQuote {
 		panelSearch.setBounds(10, 239, 263, 117);
 		frmQuoteApplication.getContentPane().add(panelSearch);
 		panelSearch.setLayout(null);
-
+		
+		JPanel panelSearchText = new JPanel();
+		panelSearchText.setBounds(0, 0, 263, 30);
+		panelSearch.add(panelSearchText);
+		panelSearchText.setLayout(null);
+		
 		txtSearch = new JTextField();
+		txtSearch.setBounds(8, 5, 246, 20);
+		panelSearchText.add(txtSearch);
 		txtSearch.setToolTipText("Search");
-		txtSearch.setBounds(10, 1, 250, 20);
-		panelSearch.add(txtSearch);
-		txtSearch.setColumns(20);
+		txtSearch.setColumns(30);
 
 		JLabel lblNewLabel = new JLabel("Search By:");
 		lblNewLabel.setBounds(10, 32, 70, 14);
 		panelSearch.add(lblNewLabel);
-
+		
+		JPanel panelSearchRange = new JPanel();
+		panelSearchRange.setBounds(0, 51, 260, 21);
+		panelSearch.add(panelSearchRange);
+		panelSearchRange.setLayout(new BoxLayout(panelSearchRange, BoxLayout.X_AXIS));
+		
+		
+		ButtonGroup searchScope = new ButtonGroup();
+		
 		radAuthor = new JRadioButton("Author");
-		radAuthor.setBounds(82, 54, 70, 23);
-		panelSearch.add(radAuthor);
+		panelSearchRange.add(radAuthor);
+		searchScope.add(radAuthor);
 
 		radQuote = new JRadioButton("Quote");
-		radQuote.setBounds(10, 54, 70, 23);
-		panelSearch.add(radQuote);
+		panelSearchRange.add(radQuote);
+		searchScope.add(radQuote);
 
 		radBoth = new JRadioButton("Both");
+		panelSearchRange.add(radBoth);
 		radBoth.setSelected(true);
-		radBoth.setBounds(150, 54, 70, 23);
-		panelSearch.add(radBoth);
-
-		ButtonGroup searchScope = new ButtonGroup();
-		searchScope.add(radAuthor);
-		searchScope.add(radQuote);
 		searchScope.add(radBoth);
+		
+		radKeyword = new JRadioButton("Keywords");
+		panelSearchRange.add(radKeyword);
+		radKeyword.setSelected(false);
+		searchScope.add(radKeyword);
 
 		/* reset button */
 		JButton btnReset = new JButton("Reset");
